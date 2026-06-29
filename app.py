@@ -6,7 +6,9 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 
 from audit_log import get_log, write_log
+from scoring import attribution_from_confidence, combine_signal_scores
 from signals.llm_classifier import classify_with_llm
+from signals.stylometric_heuristics import analyze_stylometry
 
 
 load_dotenv()
@@ -36,9 +38,14 @@ def create_app():
 
         content_id = str(uuid4())
         llm_result = classify_with_llm(raw_text)
+        stylometric_result = analyze_stylometry(raw_text)
+        confidence = combine_signal_scores(
+            llm_result["score"],
+            stylometric_result["score"],
+        )
+        attribution = attribution_from_confidence(confidence)
 
         timestamp = datetime.now(timezone.utc).isoformat()
-        attribution = "likely_ai"
         
         response = {
             "content_id": content_id,
@@ -46,8 +53,8 @@ def create_app():
             "status": "classified",
             "timestamp": timestamp,
             "llm_classifier": llm_result["score"],
-            "stylometric_heuristics": None,
-            "confidence": 0.78,
+            "stylometric_heuristics": stylometric_result["score"],
+            "confidence": confidence,
             "attribution": attribution,
         }
         write_log(
@@ -58,6 +65,8 @@ def create_app():
                 "timestamp": timestamp,
                 "attribution": attribution,
                 "llm_classifier_score": llm_result["score"],
+                "stylometric_heuristics_score": stylometric_result["score"],
+                "confidence": confidence,
             }
         )
 

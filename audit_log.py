@@ -9,6 +9,13 @@ DEFAULT_LIMIT = int(os.getenv("AUDIT_LOG_LIMIT", "5"))
 
 def write_log(entry):
     """Append one structured JSON audit entry."""
+    if LOG_PATH.exists() and LOG_PATH.stat().st_size > 0:
+        with LOG_PATH.open("rb") as log_file:
+            log_file.seek(-1, os.SEEK_END)
+            if log_file.read(1) != b"\n":
+                with LOG_PATH.open("a", encoding="utf-8") as append_file:
+                    append_file.write("\n")
+
     with LOG_PATH.open("a", encoding="utf-8") as log_file:
         log_file.write(json.dumps(entry, sort_keys=True) + "\n")
 
@@ -25,6 +32,9 @@ def get_log(limit=DEFAULT_LIMIT):
     for line in lines[-limit:]:
         line = line.strip()
         if line:
-            entries.append(json.loads(line))
+            try:
+                entries.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
 
     return entries
