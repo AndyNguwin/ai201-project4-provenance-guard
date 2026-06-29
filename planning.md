@@ -32,7 +32,7 @@
 ### Signal Combination Method
 
 - I will average the two signals together into one final confidence score for AI likelihood.
-    - final_ai_score = (llm_ai_score + stylometric_ai_score) / 2
+    - confidence = (llm_ai_score + stylometric_ai_score) / 2
 - Since there are only two signals, majority vote using binary flag signal outputs wouldn't make sense as there can be ties in decision-making with no other signal to break the tie.
 - There isn't a fine-tuned weighted average because I have no prior observable data to accurately tune the detection signals to. As a baseline decision, both signals are weighted the same for this project. 
 
