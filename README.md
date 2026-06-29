@@ -2,6 +2,9 @@
 
 Provenance Guard is a system for classifying submitted text as likely AI-generated, likely human-written, or uncertain. The system combines an LLM classifier with stylometric heuristics, produces a confidence score, displays a transparency label, logs submission events, and supports appeal intake.
 
+## Demo Video
+- https://www.loom.com/share/22ca16934fb64bddb8e4f8172d60ef10
+
 ## Architecture Overview
 
 The path a submission takes through the system:
