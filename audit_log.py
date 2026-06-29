@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 LOG_PATH = Path(os.getenv("AUDIT_LOG_PATH", "audit_log.jsonl"))
-DEFAULT_LIMIT = int(os.getenv("AUDIT_LOG_LIMIT", "5"))
+DEFAULT_LIMIT = int(os.getenv("AUDIT_LOG_LIMIT", "50"))
 
 
 def write_log(entry):
@@ -22,6 +22,12 @@ def write_log(entry):
 
 def get_log(limit=DEFAULT_LIMIT):
     """Return the most recent audit log entries."""
+    entries = get_all_log_entries()
+    return entries[-limit:]
+
+
+def get_all_log_entries():
+    """Return all parseable audit log entries."""
     if not LOG_PATH.exists():
         return []
 
@@ -29,8 +35,8 @@ def get_log(limit=DEFAULT_LIMIT):
         lines = log_file.readlines()
 
     entries = []
-    for line in lines[-limit:]:
-        line = line.strip()
+    for line in lines:
+        line = line.strip().lstrip("\ufeff")
         if line:
             try:
                 entries.append(json.loads(line))
@@ -38,3 +44,15 @@ def get_log(limit=DEFAULT_LIMIT):
                 continue
 
     return entries
+
+
+def find_submission(content_id):
+    """Find the original submission audit entry for a content ID."""
+    for entry in reversed(get_all_log_entries()):
+        if (
+            entry.get("event_type") == "submission"
+            and entry.get("content_id") == content_id
+        ):
+            return entry
+
+    return None

@@ -1,6 +1,7 @@
 import json
 
-from scoring import attribution_from_confidence, combine_signal_scores
+from labels import generate_label
+from scoring import combine_signal_scores
 from signals.llm_classifier import classify_with_llm
 from signals.stylometric_heuristics import analyze_stylometry
 
@@ -12,13 +13,14 @@ def classify_text(text):
         llm_result["score"],
         stylometric_result["score"],
     )
-    attribution = attribution_from_confidence(confidence)
+    transparency_label = generate_label(confidence)
 
     return {
         "llm_classifier": llm_result["score"],
         "stylometric_heuristics": stylometric_result["score"],
         "confidence": confidence,
-        "attribution": attribution,
+        "attribution": transparency_label["attribution"],
+        "transparency_label": transparency_label["text"],
         "details": {
             "llm_classifier": llm_result,
             "stylometric_heuristics": stylometric_result,
