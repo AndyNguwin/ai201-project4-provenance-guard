@@ -1,5 +1,3 @@
 .env
 .venv
-audit_log.jsonl
-submissions.json
 __pycache__/
